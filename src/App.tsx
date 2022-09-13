@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler } from 'react';
+import React, { ChangeEventHandler, FC } from 'react';
 // import logo from './logo.svg';
 import './App.css';
 
@@ -14,30 +14,16 @@ interface IPost {
   points: number
   objID: number
 }
-const posts: IPost[] = [
-  {
-    title: 'title 123',
-    url: 'url 123',
-    author: 'author 123',
-    commentsCnt: 101,
-    points: 102,
-    objID: 103,
-  },
-  {
-    title: 'title 456',
-    url: 'url 456',
-    author: 'author 456',
-    commentsCnt: 201,
-    points: 202,
-    objID: 203,
-  }
-]
 
 
-const List = () => {
+// const List: FC = () => {
+// const List: FC = (props: { list: IPost[]}) => {
+const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
+  console.log(props.list2)
   return (
     <>
-    {posts.map(function(el){
+    {
+      props.list.map(function(el){
       return (
         <div key={el.objID}>
           <div><a href={el.url}>{el.title}</a></div>
@@ -53,12 +39,31 @@ const List = () => {
   )
 }
 
-function App(): JSX.Element {
+function App() {
   const logInputEvent: ChangeEventHandler<HTMLInputElement> = (evt) => console.log(evt)
+  const posts: IPost[] = [
+    {
+      title: 'title 1234',
+      url: 'url 123',
+      author: 'author 123',
+      commentsCnt: 101,
+      points: 102,
+      objID: 103,
+    },
+    {
+      title: 'title 456',
+      url: 'url 456',
+      author: 'author 456',
+      commentsCnt: 201,
+      points: 202,
+      objID: 203,
+    }
+  ]
+
   return (
     <>
       <input type="text" onChange={logInputEvent} />
-      <List />
+      <List list={posts} list2 = {posts}/>
     </>
 
   );
