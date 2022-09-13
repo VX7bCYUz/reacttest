@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { ChangeEventHandler } from 'react';
 // import logo from './logo.svg';
 import './App.css';
 
-const title = 'React_123'
+// const title = 'React_123'
 // const list = [1,2,3,4,5]
 
 
@@ -54,32 +54,13 @@ const List = () => {
 }
 
 function App(): JSX.Element {
+  const logInputEvent: ChangeEventHandler<HTMLInputElement> = (evt) => console.log(evt)
   return (
-    <div>
-      <h1 className='greetings'>Hello, {title}</h1>
+    <>
+      <input type="text" onChange={logInputEvent} />
+      <List />
+    </>
 
-      {/* {list.map(el => (
-        <h1 key={el}>{el}</h1>
-      ))} */}
-      <><List /></>
-    </div>
-
-    // <div className="App">
-    //   <header className="App-header">
-    //     <img src={logo} className="App-logo" alt="logo" />
-    //     <p>
-    //       123Edit <code>src/App.tsx</code> and save to reload.
-    //     </p>
-    //     <a
-    //       className="App-link"
-    //       href="https://reactjs.org"
-    //       target="_blank"
-    //       rel="noopener noreferrer"
-    //     >
-    //       Learn React
-    //     </a>
-    //   </header>
-    // </div>
   );
 }
 
