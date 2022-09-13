@@ -19,7 +19,7 @@ interface IPost {
 // const List: FC = () => {
 // const List: FC = (props: { list: IPost[]}) => {
 const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
-  console.log(props.list2)
+  console.log(111, props.list2)
   return (
     <>
     {
@@ -59,10 +59,15 @@ function App() {
       objID: 203,
     }
   ]
+  const [searchTerm, setSearchTerm] = React.useState('11111');
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => setSearchTerm(evt.target.value);
 
   return (
     <>
-      <input type="text" onChange={logInputEvent} />
+      {/* <input type="text" onChange={logInputEvent} /> */}
+      <input type="text" onChange={handleChange} />
+      <p>Searching for <strong>{searchTerm}</strong>.</p>
+      
       <List list={posts} list2 = {posts}/>
     </>
 
