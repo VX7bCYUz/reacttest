@@ -1,10 +1,5 @@
 import React, { ChangeEventHandler, FC } from 'react';
-// import logo from './logo.svg';
 import './App.css';
-
-// const title = 'React_123'
-// const list = [1,2,3,4,5]
-
 
 interface IPost {
   title: string
@@ -16,8 +11,6 @@ interface IPost {
 }
 
 
-// const List: FC = () => {
-// const List: FC = (props: { list: IPost[]}) => {
 const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
   console.log(111, props.list2)
   return (
@@ -78,8 +71,11 @@ function App() {
     }
   ]
 
-  const [searchTerm, setSearchTerm] = React.useState('1');
-  const handleSearch: IHandleSearch = (term) => setSearchTerm(term);
+  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || '1');
+  const handleSearch: IHandleSearch = (term) => {
+    setSearchTerm(term);
+    localStorage.setItem('search',term);
+  }
   const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
