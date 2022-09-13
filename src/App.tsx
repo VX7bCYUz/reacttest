@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, FC } from 'react';
+import React, { ChangeEventHandler, FC, useState } from 'react';
 import './App.css';
 
 interface IPost {
@@ -11,8 +11,12 @@ interface IPost {
 }
 
 
-const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
-  console.log(111, props.list2)
+interface IListProps {
+  list: IPost[];
+  onRemoveItem: (p: IPost) => void;
+}
+
+const List: FC<IListProps> = (props) => {
   return (
     <>
     {
@@ -23,6 +27,7 @@ const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
           <div>{el.author}</div>
           <div>{el.commentsCnt}</div>
           <div>{el.points}</div>
+          <button onClick={() => props.onRemoveItem(el)}>delete</button>
         </div>      
       )
     }
@@ -61,49 +66,42 @@ const useSemiPersistentState = (key: string, initialState = '') => {
   return [value, setValue] as const;
 }
 
-// const Comp: FC = () => {
-//   const ref = React.useRef<HTMLInputElement>(null);
-//   return <>
-//     <input type="text" ref={ref} />
-//   </>
-// }
-
-// const ChildComp = React.forwardRef<HTMLInputElement, IChildCompProps>((props, ref) => <>
-//   <input type="text" ref={ref} />
-// </>)
+const initPosts: IPost[] = [
+  {
+    title: 'title 123',
+    url: 'url 123',
+    author: 'author 123',
+    commentsCnt: 101,
+    points: 102,
+    objID: 103,
+  },
+  {
+    title: 'title 456',
+    url: 'url 456',
+    author: 'author 456',
+    commentsCnt: 201,
+    points: 202,
+    objID: 203,
+  }
+]
 
 function App() {
-  const posts: IPost[] = [
-    {
-      title: 'title 123',
-      url: 'url 123',
-      author: 'author 123',
-      commentsCnt: 101,
-      points: 102,
-      objID: 103,
-    },
-    {
-      title: 'title 456',
-      url: 'url 456',
-      author: 'author 456',
-      commentsCnt: 201,
-      points: 202,
-      objID: 203,
-    }
-  ]
+  const [posts, setPosts] = useState(initPosts);
 
-  // const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || '1');
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
-  // React.useEffect(() => {localStorage.setItem('search',searchTerm)}, [searchTerm]);
   const handleSearch: IHandleSearch = (term) => {
     setSearchTerm(term);
   }
   const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  const handleRemovePost = (post: IPost) => {
+    setPosts(posts.filter((p) => p.objID !== post.objID))
+  }
+
   return (
     <>
       <Search term={searchTerm} onSearch={handleSearch} id="search">Search123</Search>
-      <List list={searchPosts} list2 = {posts}/>
+      <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
     </>
 
   );
