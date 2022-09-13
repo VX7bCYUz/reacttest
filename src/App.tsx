@@ -36,7 +36,9 @@ type IHandleSearch = (val: string) => void;
 
 interface ISearchProps {
   term: string,
-  onSearch: IHandleSearch
+  onSearch: IHandleSearch,
+  id: string,
+  children: string,
 }
 
 const Search: FC<ISearchProps> = (props) => {
@@ -45,6 +47,7 @@ const Search: FC<ISearchProps> = (props) => {
   };
   return (
     <>      
+    <label htmlFor={props.id}>{props.children}</label>
     <input type="text" value={props.term} onChange={handleChange} />
     </>
   )
@@ -88,7 +91,7 @@ function App() {
 
   return (
     <>
-      <Search term={searchTerm} onSearch={handleSearch}/>
+      <Search term={searchTerm} onSearch={handleSearch} id="search">Search123</Search>
       <List list={searchPosts} list2 = {posts}/>
     </>
 
