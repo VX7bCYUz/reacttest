@@ -40,15 +40,14 @@ const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
 }
 
 const Search: FC<{ onSearch: IHandleSearch}> = (props) => {
-  const [searchTerm, setSearchTerm] = React.useState('11111');
   const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    setSearchTerm(evt.target.value);
+    // setSearchTerm(evt.target.value);
     props.onSearch(evt.target.value);
   };
   return (
     <>      
     <input type="text" onChange={handleChange} />
-    <p>Searching for <strong>{searchTerm}</strong>.</p>
+    {/* <p>Searching for <strong>{searchTerm}</strong>.</p> */}
     </>
   )
 }
@@ -59,7 +58,7 @@ type IHandleSearch = (val: string) => void;
 function App() {
   const posts: IPost[] = [
     {
-      title: 'title 1234',
+      title: 'title 123',
       url: 'url 123',
       author: 'author 123',
       commentsCnt: 101,
@@ -75,12 +74,15 @@ function App() {
       objID: 203,
     }
   ]
-  const handleSearch: IHandleSearch = (term) => console.log(term);
+
+  const [searchTerm, setSearchTerm] = React.useState('11111');
+  const handleSearch: IHandleSearch = (term) => setSearchTerm(term);
+  const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <>
       <Search onSearch={handleSearch}/>
-      <List list={posts} list2 = {posts}/>
+      <List list={searchPosts} list2 = {posts}/>
     </>
 
   );
