@@ -61,6 +61,17 @@ const useSemiPersistentState = (key: string, initialState = '') => {
   return [value, setValue] as const;
 }
 
+// const Comp: FC = () => {
+//   const ref = React.useRef<HTMLInputElement>(null);
+//   return <>
+//     <input type="text" ref={ref} />
+//   </>
+// }
+
+// const ChildComp = React.forwardRef<HTMLInputElement, IChildCompProps>((props, ref) => <>
+//   <input type="text" ref={ref} />
+// </>)
+
 function App() {
   const posts: IPost[] = [
     {
