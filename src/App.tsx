@@ -1,16 +1,67 @@
 import React from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
-// import { listenerCount } from 'process';
 
-const list = [1,2,3,4,5]
+const title = 'React_123'
+// const list = [1,2,3,4,5]
 
-function App() {
+
+interface IPost {
+  title: string
+  url: string
+  author: string
+  commentsCnt: number
+  points: number
+  objID: number
+}
+const posts: IPost[] = [
+  {
+    title: 'title 123',
+    url: 'url 123',
+    author: 'author 123',
+    commentsCnt: 101,
+    points: 102,
+    objID: 103,
+  },
+  {
+    title: 'title 456',
+    url: 'url 456',
+    author: 'author 456',
+    commentsCnt: 201,
+    points: 202,
+    objID: 203,
+  }
+]
+
+
+const List = () => {
+  return (
+    <>
+    {posts.map(function(el){
+      return (
+        <div key={el.objID}>
+          <div><a href={el.url}>{el.title}</a></div>
+          <div>{el.author}</div>
+          <div>{el.commentsCnt}</div>
+          <div>{el.points}</div>
+        </div>      
+      )
+    }
+    )
+  }
+  </>
+  )
+}
+
+function App(): JSX.Element {
   return (
     <div>
-      {list.map(el => (
+      <h1 className='greetings'>Hello, {title}</h1>
+
+      {/* {list.map(el => (
         <h1 key={el}>{el}</h1>
-      ))}
+      ))} */}
+      <><List /></>
     </div>
 
     // <div className="App">
