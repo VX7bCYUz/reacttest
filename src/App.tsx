@@ -32,6 +32,8 @@ const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
   )
 }
 
+type IHandleSearch = (val: string) => void;
+
 interface ISearchProps {
   term: string,
   onSearch: IHandleSearch
@@ -48,8 +50,13 @@ const Search: FC<ISearchProps> = (props) => {
   )
 }
 
-
-type IHandleSearch = (val: string) => void;
+const useSemiPersistentState = (key: string, initialState = '') => {
+  const [value, setValue] = React.useState(localStorage.getItem(key) || initialState);
+  React.useEffect(() => {
+    localStorage.setItem(key, value)
+  }, [value]);
+  return [value, setValue] as const;
+}
 
 function App() {
   const posts: IPost[] = [
@@ -71,8 +78,9 @@ function App() {
     }
   ]
 
-  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || '1');
-  React.useEffect(() => {localStorage.setItem('search',searchTerm)}, [searchTerm]);
+  // const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || '1');
+  const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
+  // React.useEffect(() => {localStorage.setItem('search',searchTerm)}, [searchTerm]);
   const handleSearch: IHandleSearch = (term) => {
     setSearchTerm(term);
   }
