@@ -72,9 +72,9 @@ function App() {
   ]
 
   const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || '1');
+  React.useEffect(() => {localStorage.setItem('search',searchTerm)}, [searchTerm]);
   const handleSearch: IHandleSearch = (term) => {
     setSearchTerm(term);
-    localStorage.setItem('search',term);
   }
   const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
