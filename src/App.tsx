@@ -39,15 +39,18 @@ const List: FC<{ list: IPost[]; list2: IPost[] }> = (props) => {
   )
 }
 
-const Search: FC<{ onSearch: IHandleSearch}> = (props) => {
+interface ISearchProps {
+  term: string,
+  onSearch: IHandleSearch
+}
+
+const Search: FC<ISearchProps> = (props) => {
   const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    // setSearchTerm(evt.target.value);
     props.onSearch(evt.target.value);
   };
   return (
     <>      
-    <input type="text" onChange={handleChange} />
-    {/* <p>Searching for <strong>{searchTerm}</strong>.</p> */}
+    <input type="text" value={props.term} onChange={handleChange} />
     </>
   )
 }
@@ -75,13 +78,13 @@ function App() {
     }
   ]
 
-  const [searchTerm, setSearchTerm] = React.useState('11111');
+  const [searchTerm, setSearchTerm] = React.useState('1');
   const handleSearch: IHandleSearch = (term) => setSearchTerm(term);
   const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <>
-      <Search onSearch={handleSearch}/>
+      <Search term={searchTerm} onSearch={handleSearch}/>
       <List list={searchPosts} list2 = {posts}/>
     </>
 
