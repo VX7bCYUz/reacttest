@@ -88,12 +88,22 @@ const initPosts: IPost[] = [
 
 function App() {
   const [posts, setPosts] = useState<IPost[]>([]);
+  
   const getAsyncPosts = () => new Promise<{ data: { posts: IPost[] }}>((resolve) => {
     setTimeout(()=>resolve({data: {posts: initPosts}}), 2000)
   })
-  useEffect(()=>{
-    getAsyncPosts().then(result => setPosts(result.data.posts))
-  }, [])
+  // useEffect(()=>{
+    //   getAsyncPosts().then(result => setPosts(result.data.posts))
+    // }, [])
+    const [isLoading, setIsLoading] = useState(false);
+  
+    useEffect(()=>{
+      setIsLoading(true);
+      getAsyncPosts().then(result => {
+        setPosts(result.data.posts);
+        setIsLoading(false);
+      })
+    })
 
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
@@ -107,7 +117,11 @@ function App() {
   return (
     <>
       <InputWithLabel term={searchTerm} onSearch={handleSearch} id="search">Search123</InputWithLabel>
-      <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
+      {
+        isLoading
+          ? <p>Loading...</p>
+          : <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
+      }      
     </>
 
   );
