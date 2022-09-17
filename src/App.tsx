@@ -7,7 +7,7 @@ interface IPost {
   author: string
   commentsCnt: number
   points: number
-  objID: number
+  objectID: number
 }
 
 
@@ -22,7 +22,7 @@ const List: FC<IListProps> = (props) => {
     {
       props.list.map(function(el){
       return (
-        <div key={el.objID}>
+        <div key={el.objectID}>
           <div><a href={el.url}>{el.title}</a></div>
           <div>{el.author}</div>
           <div>{el.commentsCnt}</div>
@@ -46,23 +46,23 @@ interface ISearchProps {
   children: string,
 }
 
-const Search: FC<ISearchProps> = (props) => {
+const InputWithLabel: FC<ISearchProps> = (props1) => {
   const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    props.onSearch(evt.target.value);
+    props1.onSearch(evt.target.value);
   };
   return (
     <>      
-    <label htmlFor={props.id}>{props.children}</label>
-    <input type="text" value={props.term} onChange={handleChange} />
+    <label htmlFor={props1.id}>{props1.children}</label>
+    <input type="text" value={props1.term} onChange={handleChange} />
     </>
   )
 }
 
 const useSemiPersistentState = (key: string, initialState = '') => {
-  const [value, setValue] = React.useState(localStorage.getItem(key) || initialState);
+  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
   React.useEffect(() => {
     localStorage.setItem(key, value)
-  }, [value]);
+  }, [value, key]);
   return [value, setValue] as const;
 }
 
@@ -73,7 +73,7 @@ const initPosts: IPost[] = [
     author: 'author 123',
     commentsCnt: 101,
     points: 102,
-    objID: 103,
+    objectID: 103,
   },
   {
     title: 'title 456',
@@ -81,7 +81,7 @@ const initPosts: IPost[] = [
     author: 'author 456',
     commentsCnt: 201,
     points: 202,
-    objID: 203,
+    objectID: 203,
   }
 ]
 
@@ -89,18 +89,16 @@ function App() {
   const [posts, setPosts] = useState(initPosts);
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
-  const handleSearch: IHandleSearch = (term) => {
-    setSearchTerm(term);
-  }
+  const handleSearch: IHandleSearch = (term) => {setSearchTerm(term);}
   const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleRemovePost = (post: IPost) => {
-    setPosts(posts.filter((p) => p.objID !== post.objID))
+    setPosts(posts.filter((p) => p.objectID !== post.objectID))
   }
 
   return (
     <>
-      <Search term={searchTerm} onSearch={handleSearch} id="search">Search123</Search>
+      <InputWithLabel term={searchTerm} onSearch={handleSearch} id="search">Search123</InputWithLabel>
       <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
     </>
 
