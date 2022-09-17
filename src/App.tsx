@@ -86,59 +86,70 @@ const initPosts: IPost[] = [
   }
 ]
 
-type IPostsReducerAction = {
-  type: 'SET',
+type IPostsReducerAction = 
+{
+  type: 'FETCH_INIT',
+} | {
+  type: 'FETCH_SUCCESS',
   payload: IPost[]
+} | {
+  type: 'FETCH_FAILURE',
 } | {
   type: 'DELETE',
   payload: IPost
 }
 
-const postsReducer: Reducer<IPost[], IPostsReducerAction> = (state, action) => {
+interface IPostsState {
+  data: IPost[],
+  isLoading: boolean,
+  isError: boolean
+}
+
+const postsReducer: Reducer<IPostsState, IPostsReducerAction> = (state, action) => {
   switch (action.type) {
-    case 'SET':
-      return action.payload
+    case 'FETCH_INIT':
+      return {data: [], isLoading: true, isError: false}
+    case 'FETCH_SUCCESS':
+      return {data: action.payload, isLoading: false, isError: false}
+    case 'FETCH_FAILURE':
+      return {...state, isLoading: false, isError: true}
     case 'DELETE':
-      return state.filter(p => p.objectID !== action.payload.objectID)
+      return {...state, data: state.data.filter(p => p.objectID !== action.payload.objectID)}
   }
 }
 
+
+
 function App() {
-  // const [posts, setPosts] = useState<IPost[]>([]);
-  const [posts, dispatchPosts] = useReducer(postsReducer, []);
+  const [posts, dispatchPosts] = useReducer(postsReducer, {data: [], isLoading: false, isError: false});
   
   const getAsyncPosts = () => new Promise<{ data: { posts: IPost[] }}>((resolve) => {
     setTimeout(()=>resolve({data: {posts: initPosts}}), 2000)
   })
-  // useEffect(()=>{
-    //   getAsyncPosts().then(result => setPosts(result.data.posts))
-    // }, [])
     const [isLoading, setIsLoading] = useState(false);
   
     useEffect(()=>{
-      setIsLoading(true);
+      dispatchPosts({type: 'FETCH_INIT'})
       getAsyncPosts().then(result => {
-        // setPosts(result.data.posts);
-        dispatchPosts({type: 'SET', payload: result.data.posts})
-        setIsLoading(false);
+        dispatchPosts({type: 'FETCH_SUCCESS', payload: result.data.posts})
       })
     })
 
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
   const handleSearch: IHandleSearch = (term) => {setSearchTerm(term);}
-  const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const searchPosts = posts.data.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleRemovePost = (post: IPost) => {
-    // setPosts(posts.filter((p) => p.objectID !== post.objectID))
     dispatchPosts({type: 'DELETE', payload: post})
   }
 
   return (
     <>
       <InputWithLabel term={searchTerm} onSearch={handleSearch} id="search">Search123</InputWithLabel>
+      {posts.isError && <p>Something went wrong ...</p>}
       {
-        isLoading
+        posts.isLoading
           ? <p>Loading...</p>
           : <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
       }      
