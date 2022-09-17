@@ -1,4 +1,5 @@
-import React, { ChangeEventHandler, FC, useState } from 'react';
+import { resolve } from 'path';
+import React, { ChangeEventHandler, FC, useEffect, useState } from 'react';
 import './App.css';
 
 interface IPost {
@@ -86,7 +87,14 @@ const initPosts: IPost[] = [
 ]
 
 function App() {
-  const [posts, setPosts] = useState(initPosts);
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const getAsyncPosts = () => new Promise<{ data: { posts: IPost[] }}>((resolve) => {
+    setTimeout(()=>resolve({data: {posts: initPosts}}), 2000)
+  })
+  useEffect(()=>{
+    getAsyncPosts().then(result => setPosts(result.data.posts))
+  }, [])
+
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
   const handleSearch: IHandleSearch = (term) => {setSearchTerm(term);}
