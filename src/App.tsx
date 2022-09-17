@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import React, { ChangeEventHandler, FC, useEffect, useState } from 'react';
+import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState } from 'react';
 import './App.css';
 
 interface IPost {
@@ -86,8 +86,26 @@ const initPosts: IPost[] = [
   }
 ]
 
+type IPostsReducerAction = {
+  type: 'SET',
+  payload: IPost[]
+} | {
+  type: 'DELETE',
+  payload: IPost
+}
+
+const postsReducer: Reducer<IPost[], IPostsReducerAction> = (state, action) => {
+  switch (action.type) {
+    case 'SET':
+      return action.payload
+    case 'DELETE':
+      return state.filter(p => p.objectID !== action.payload.objectID)
+  }
+}
+
 function App() {
-  const [posts, setPosts] = useState<IPost[]>([]);
+  // const [posts, setPosts] = useState<IPost[]>([]);
+  const [posts, dispatchPosts] = useReducer(postsReducer, []);
   
   const getAsyncPosts = () => new Promise<{ data: { posts: IPost[] }}>((resolve) => {
     setTimeout(()=>resolve({data: {posts: initPosts}}), 2000)
@@ -100,7 +118,8 @@ function App() {
     useEffect(()=>{
       setIsLoading(true);
       getAsyncPosts().then(result => {
-        setPosts(result.data.posts);
+        // setPosts(result.data.posts);
+        dispatchPosts({type: 'SET', payload: result.data.posts})
         setIsLoading(false);
       })
     })
@@ -111,7 +130,8 @@ function App() {
   const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleRemovePost = (post: IPost) => {
-    setPosts(posts.filter((p) => p.objectID !== post.objectID))
+    // setPosts(posts.filter((p) => p.objectID !== post.objectID))
+    dispatchPosts({type: 'DELETE', payload: post})
   }
 
   return (
