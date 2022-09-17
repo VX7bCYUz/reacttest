@@ -3,12 +3,12 @@ import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState
 import './App.css';
 
 interface IPost {
-  title: string
-  url: string
+  title: string | null
+  url: string | null
   author: string
-  commentsCnt: number
+  // commentsCnt: number
   points: number
-  objectID: number
+  objectID: string
 }
 
 
@@ -24,9 +24,9 @@ const List: FC<IListProps> = (props) => {
       props.list.map(function(el){
       return (
         <div key={el.objectID}>
-          <div><a href={el.url}>{el.title}</a></div>
+          {/* <div><a href={el.url}>{el.title}</a></div> */}
           <div>{el.author}</div>
-          <div>{el.commentsCnt}</div>
+          {/* <div>{el.commentsCnt}</div> */}
           <div>{el.points}</div>
           <button onClick={() => props.onRemoveItem(el)}>delete</button>
         </div>      
@@ -72,17 +72,17 @@ const initPosts: IPost[] = [
     title: 'title 123',
     url: 'url 123',
     author: 'author 123',
-    commentsCnt: 101,
+    // commentsCnt: 101,
     points: 102,
-    objectID: 103,
+    objectID: '103',
   },
   {
     title: 'title 456',
     url: 'url 456',
     author: 'author 456',
-    commentsCnt: 201,
+    // commentsCnt: 201,
     points: 202,
-    objectID: 203,
+    objectID: '203',
   }
 ]
 
@@ -118,6 +118,19 @@ const postsReducer: Reducer<IPostsState, IPostsReducerAction> = (state, action) 
   }
 }
 
+interface IApiPost {
+  title: string | null
+  url: string | null
+  author: string
+  points: number
+  objectID: string
+}
+
+interface IApiResponse {
+  hits: IApiPost[]
+}
+
+const API_URL = 'https://hn.algolia.com/api/v1/search';
 
 
 function App() {
@@ -126,19 +139,22 @@ function App() {
   const getAsyncPosts = () => new Promise<{ data: { posts: IPost[] }}>((resolve) => {
     setTimeout(()=>resolve({data: {posts: initPosts}}), 2000)
   })
-    const [isLoading, setIsLoading] = useState(false);
   
-    useEffect(()=>{
-      dispatchPosts({type: 'FETCH_INIT'})
-      getAsyncPosts().then(result => {
-        dispatchPosts({type: 'FETCH_SUCCESS', payload: result.data.posts})
-      })
-    })
-
-
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
   const handleSearch: IHandleSearch = (term) => {setSearchTerm(term);}
-  const searchPosts = posts.data.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  // const searchPosts = posts.data.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(()=>{
+    dispatchPosts({type: 'FETCH_INIT'});
+    fetch(`${API_URL}?query=${searchTerm}`)
+    .then(res => res.json())
+    .then((result: IApiResponse)=>{
+      dispatchPosts({type: 'FETCH_SUCCESS', payload: result.hits})
+    })
+    .catch(()=>dispatchPosts({type: 'FETCH_FAILURE'}))
+ },[searchTerm])
 
   const handleRemovePost = (post: IPost) => {
     dispatchPosts({type: 'DELETE', payload: post})
@@ -151,7 +167,7 @@ function App() {
       {
         posts.isLoading
           ? <p>Loading...</p>
-          : <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
+          : <List list={posts.data} onRemoveItem = {handleRemovePost}/>
       }      
     </>
 
