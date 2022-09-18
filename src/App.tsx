@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState, useCallback } from 'react';
+import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState, useCallback, createContext } from 'react';
 import './App.css';
 
 interface IPost {
@@ -110,6 +110,19 @@ interface IApiResponse {
 const API_URL = 'https://hn.algolia.com/api/v1/search';
 // const API_URL = 'https://api.disneyapi.dev/characters';
 
+interface IUser {
+  name: string;
+}
+interface IUserContext {
+  user: IUser;
+}
+
+export const userContext = createContext<IUserContext>({
+  user: {
+    name: 'noname',
+  },
+});
+
 
 function App() {
   const [posts, dispatchPosts] = useReducer(postsReducer, {data: [], isLoading: false, isError: false});
@@ -136,15 +149,19 @@ function App() {
   }
 
   return (
-    <>
-      <InputWithLabel term={searchTerm} onSearch={handleSearch} id="search">Search123</InputWithLabel>
+    <div className='App'>
+      <InputWithLabel 
+        term={searchTerm} 
+        onSearch={handleSearch} 
+        id="search">Search123
+      </InputWithLabel>
       {posts.isError && <p>Something went wrong ...</p>}
       {
         posts.isLoading
           ? <p>Loading...</p>
           : <List list={posts.data} onRemoveItem = {handleRemovePost}/>
       }      
-    </>
+    </div>
 
   );
 }
