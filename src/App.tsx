@@ -1,5 +1,4 @@
-import { resolve } from 'path';
-import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState } from 'react';
+import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState, useCallback } from 'react';
 import './App.css';
 
 interface IPost {
@@ -25,10 +24,7 @@ const List: FC<IListProps> = (props) => {
       return (
         <div key={el.objectID}>
           {/* <div><a href={el.url}>{el.title}</a></div> */}
-          <div>{el.author}</div>
-          {/* <div>{el.commentsCnt}</div> */}
-          <div>{el.points}</div>
-          <button onClick={() => props.onRemoveItem(el)}>delete</button>
+          <span>{el.author}</span> /+++/ <span>{el.points}</span> /+++/ <button onClick={() => props.onRemoveItem(el)}>delete</button>
         </div>      
       )
     }
@@ -66,25 +62,6 @@ const useSemiPersistentState = (key: string, initialState = '') => {
   }, [value, key]);
   return [value, setValue] as const;
 }
-
-const initPosts: IPost[] = [
-  {
-    title: 'title 123',
-    url: 'url 123',
-    author: 'author 123',
-    // commentsCnt: 101,
-    points: 102,
-    objectID: '103',
-  },
-  {
-    title: 'title 456',
-    url: 'url 456',
-    author: 'author 456',
-    // commentsCnt: 201,
-    points: 202,
-    objectID: '203',
-  }
-]
 
 type IPostsReducerAction = 
 {
@@ -131,33 +108,31 @@ interface IApiResponse {
 }
 
 const API_URL = 'https://hn.algolia.com/api/v1/search';
+// const API_URL = 'https://api.disneyapi.dev/characters';
 
 
 function App() {
   const [posts, dispatchPosts] = useReducer(postsReducer, {data: [], isLoading: false, isError: false});
   
-  const getAsyncPosts = () => new Promise<{ data: { posts: IPost[] }}>((resolve) => {
-    setTimeout(()=>resolve({data: {posts: initPosts}}), 2000)
-  })
   
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
   const handleSearch: IHandleSearch = (term) => {setSearchTerm(term);}
-  // const searchPosts = posts.data.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(()=>{
-    dispatchPosts({type: 'FETCH_INIT'});
-    fetch(`${API_URL}?query=${searchTerm}`)
-    .then(res => res.json())
-    .then((result: IApiResponse)=>{
-      dispatchPosts({type: 'FETCH_SUCCESS', payload: result.hits})
-    })
-    .catch(()=>dispatchPosts({type: 'FETCH_FAILURE'}))
- },[searchTerm])
+  const handlePosts = useCallback(()=>{
+      dispatchPosts({type: 'FETCH_INIT'});
+      fetch(`${API_URL}?query=${searchTerm}`)
+      .then(res => res.json())
+      .then((result: IApiResponse)=>{
+        dispatchPosts({type: 'FETCH_SUCCESS', payload: result.hits})
+      })
+      .catch(()=>dispatchPosts({type: 'FETCH_FAILURE'}))
+    },[searchTerm]);
 
+  useEffect(handlePosts, [handlePosts]);
   const handleRemovePost = (post: IPost) => {
-    dispatchPosts({type: 'DELETE', payload: post})
+    dispatchPosts({type: 'DELETE', payload: post});
   }
 
   return (
