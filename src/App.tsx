@@ -1,5 +1,14 @@
 import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState, useCallback, createContext } from 'react';
 import './App.css';
+import styled from 'styled-components';
+
+const StyledApp = styled.div`
+  margin: 100px auto;
+  max-width: 600px;
+  padding: 30px;
+  border: 1px dashed grey;
+  border-radius: 15px;
+`
 
 interface IPost {
   title: string | null
@@ -149,7 +158,7 @@ function App() {
   }
 
   return (
-    <div className='App'>
+    <StyledApp>
       <InputWithLabel 
         term={searchTerm} 
         onSearch={handleSearch} 
@@ -161,7 +170,7 @@ function App() {
           ? <p>Loading...</p>
           : <List list={posts.data} onRemoveItem = {handleRemovePost}/>
       }      
-    </div>
+    </StyledApp>
 
   );
 }
