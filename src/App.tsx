@@ -1,6 +1,7 @@
 import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState, useCallback, createContext } from 'react';
 import './App.css';
 import styled from 'styled-components';
+import classes1 from './App.module.css';
 
 const StyledApp = styled.div`
   margin: 100px auto;
@@ -31,7 +32,7 @@ const List: FC<IListProps> = (props) => {
     {
       props.list.map(function(el){
       return (
-        <div key={el.objectID}>
+        <div className={classes1.clmy} key={el.objectID}>
           {/* <div><a href={el.url}>{el.title}</a></div> */}
           <span>{el.author}</span> /+++/ <span>{el.points}</span> /+++/ <button onClick={() => props.onRemoveItem(el)}>delete</button>
         </div>      
