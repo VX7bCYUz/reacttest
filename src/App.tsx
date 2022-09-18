@@ -21,12 +21,15 @@ const StyledApp = styled.div`
 `;
 
 interface IPost {
-  title: string | null;
-  url: string | null;
-  author: string;
-  // commentsCnt: number
-  points: number;
-  objectID: string;
+  // title: string | null;
+  // url: string | null;
+  // author: string;
+  // // commentsCnt: number
+  // points: number;
+  // objectID: number;
+  _id: number;
+  name: string;
+  imageUrl: string;
 }
 
 interface IListProps {
@@ -39,9 +42,13 @@ const List: FC<IListProps> = (props) => {
     <>
       {props.list.map(function (el) {
         return (
-          <div className={classes.clmy} key={el.objectID}>
+          <div className={classes.clmy} key={el._id}>
             {/* <div><a href={el.url}>{el.title}</a></div> */}
-            <span>{el.author}</span> /+++/ <span>{el.points}</span> /+++/{' '}
+            {/* <span>{el.author}</span> /+++/ <span>{el.points}</span> /+++/{' '} */}
+            <div>{el.name}</div>{' '}
+            <div>
+              <img src={el.imageUrl} />
+            </div>
             <button onClick={() => props.onRemoveItem(el)}>delete</button>
           </div>
         );
@@ -85,14 +92,14 @@ type IPostsReducerAction =
     }
   | {
       type: 'FETCH_SUCCESS';
-      payload: IPost[];
+      payload: IApiPost[];
     }
   | {
       type: 'FETCH_FAILURE';
     }
   | {
       type: 'DELETE';
-      payload: IPost;
+      payload: IApiPost;
     };
 
 interface IPostsState {
@@ -115,25 +122,28 @@ const postsReducer: Reducer<IPostsState, IPostsReducerAction> = (
     case 'DELETE':
       return {
         ...state,
-        data: state.data.filter((p) => p.objectID !== action.payload.objectID),
+        data: state.data.filter((p) => p._id !== action.payload._id),
       };
   }
 };
 
-interface IApiPost {
-  title: string | null;
-  url: string | null;
-  author: string;
-  points: number;
-  objectID: string;
+interface IApiPost extends IPost {
+  // title: string | null;
+  // url: string | null;
+  // author: string;
+  // points: number;
+  // objectID: string;
+  // _id: number;
+  // name: string | null;
+  // imageUrl: string | null;
 }
 
 interface IApiResponse {
-  hits: IApiPost[];
+  data: IApiPost[];
 }
 
-const API_URL = 'https://hn.algolia.com/api/v1/search';
-// const API_URL = 'https://api.disneyapi.dev/characters';
+// const API_URL = 'https://hn.algolia.com/api/v1/search';
+const API_URL = 'https://api.disneyapi.dev/characters';
 
 interface IUser {
   name: string;
@@ -164,17 +174,22 @@ function App() {
 
   const handlePosts = useCallback(() => {
     dispatchPosts({ type: 'FETCH_INIT' });
-    fetch(`${API_URL}?query=${searchTerm}`)
+    // fetch(`${API_URL}?query=${searchTerm}`)
+    fetch(`${API_URL}`)
       .then((res) => res.json())
       .then((result: IApiResponse) => {
-        dispatchPosts({ type: 'FETCH_SUCCESS', payload: result.hits });
+        // dispatchPosts({ type: 'FETCH_SUCCESS', payload: result.hits });
+        dispatchPosts({ type: 'FETCH_SUCCESS', payload: result.data });
       })
       .catch(() => dispatchPosts({ type: 'FETCH_FAILURE' }));
   }, [searchTerm]);
 
   useEffect(handlePosts, [handlePosts]);
   const handleRemovePost = (post: IPost) => {
-    dispatchPosts({ type: 'DELETE', payload: post });
+    dispatchPosts({
+      type: 'DELETE',
+      payload: post,
+    });
   };
 
   return (
