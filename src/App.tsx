@@ -1,13 +1,13 @@
-import React, { ChangeEventHandler, FC, useState } from 'react';
+import React, { ChangeEventHandler, FC, useEffect, useReducer, Reducer, useState, useCallback } from 'react';
 import './App.css';
 
 interface IPost {
-  title: string
-  url: string
+  title: string | null
+  url: string | null
   author: string
-  commentsCnt: number
+  // commentsCnt: number
   points: number
-  objID: number
+  objectID: string
 }
 
 
@@ -22,12 +22,9 @@ const List: FC<IListProps> = (props) => {
     {
       props.list.map(function(el){
       return (
-        <div key={el.objID}>
-          <div><a href={el.url}>{el.title}</a></div>
-          <div>{el.author}</div>
-          <div>{el.commentsCnt}</div>
-          <div>{el.points}</div>
-          <button onClick={() => props.onRemoveItem(el)}>delete</button>
+        <div key={el.objectID}>
+          {/* <div><a href={el.url}>{el.title}</a></div> */}
+          <span>{el.author}</span> /+++/ <span>{el.points}</span> /+++/ <button onClick={() => props.onRemoveItem(el)}>delete</button>
         </div>      
       )
     }
@@ -46,62 +43,107 @@ interface ISearchProps {
   children: string,
 }
 
-const Search: FC<ISearchProps> = (props) => {
+const InputWithLabel: FC<ISearchProps> = (props1) => {
   const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    props.onSearch(evt.target.value);
+    props1.onSearch(evt.target.value);
   };
   return (
     <>      
-    <label htmlFor={props.id}>{props.children}</label>
-    <input type="text" value={props.term} onChange={handleChange} />
+    <label htmlFor={props1.id}>{props1.children}</label>
+    <input type="text" value={props1.term} onChange={handleChange} />
     </>
   )
 }
 
 const useSemiPersistentState = (key: string, initialState = '') => {
-  const [value, setValue] = React.useState(localStorage.getItem(key) || initialState);
+  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
   React.useEffect(() => {
     localStorage.setItem(key, value)
-  }, [value]);
+  }, [value, key]);
   return [value, setValue] as const;
 }
 
-const initPosts: IPost[] = [
-  {
-    title: 'title 123',
-    url: 'url 123',
-    author: 'author 123',
-    commentsCnt: 101,
-    points: 102,
-    objID: 103,
-  },
-  {
-    title: 'title 456',
-    url: 'url 456',
-    author: 'author 456',
-    commentsCnt: 201,
-    points: 202,
-    objID: 203,
+type IPostsReducerAction = 
+{
+  type: 'FETCH_INIT',
+} | {
+  type: 'FETCH_SUCCESS',
+  payload: IPost[]
+} | {
+  type: 'FETCH_FAILURE',
+} | {
+  type: 'DELETE',
+  payload: IPost
+}
+
+interface IPostsState {
+  data: IPost[],
+  isLoading: boolean,
+  isError: boolean
+}
+
+const postsReducer: Reducer<IPostsState, IPostsReducerAction> = (state, action) => {
+  switch (action.type) {
+    case 'FETCH_INIT':
+      return {data: [], isLoading: true, isError: false}
+    case 'FETCH_SUCCESS':
+      return {data: action.payload, isLoading: false, isError: false}
+    case 'FETCH_FAILURE':
+      return {...state, isLoading: false, isError: true}
+    case 'DELETE':
+      return {...state, data: state.data.filter(p => p.objectID !== action.payload.objectID)}
   }
-]
+}
+
+interface IApiPost {
+  title: string | null
+  url: string | null
+  author: string
+  points: number
+  objectID: string
+}
+
+interface IApiResponse {
+  hits: IApiPost[]
+}
+
+const API_URL = 'https://hn.algolia.com/api/v1/search';
+// const API_URL = 'https://api.disneyapi.dev/characters';
+
 
 function App() {
-  const [posts, setPosts] = useState(initPosts);
-
+  const [posts, dispatchPosts] = useReducer(postsReducer, {data: [], isLoading: false, isError: false});
+  
+  
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search');
-  const handleSearch: IHandleSearch = (term) => {
-    setSearchTerm(term);
-  }
-  const searchPosts = posts.filter(el => el.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const handleSearch: IHandleSearch = (term) => {setSearchTerm(term);}
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePosts = useCallback(()=>{
+      dispatchPosts({type: 'FETCH_INIT'});
+      fetch(`${API_URL}?query=${searchTerm}`)
+      .then(res => res.json())
+      .then((result: IApiResponse)=>{
+        dispatchPosts({type: 'FETCH_SUCCESS', payload: result.hits})
+      })
+      .catch(()=>dispatchPosts({type: 'FETCH_FAILURE'}))
+    },[searchTerm]);
+
+  useEffect(handlePosts, [handlePosts]);
   const handleRemovePost = (post: IPost) => {
-    setPosts(posts.filter((p) => p.objID !== post.objID))
+    dispatchPosts({type: 'DELETE', payload: post});
   }
 
   return (
     <>
-      <Search term={searchTerm} onSearch={handleSearch} id="search">Search123</Search>
-      <List list={searchPosts} onRemoveItem = {handleRemovePost}/>
+      <InputWithLabel term={searchTerm} onSearch={handleSearch} id="search">Search123</InputWithLabel>
+      {posts.isError && <p>Something went wrong ...</p>}
+      {
+        posts.isLoading
+          ? <p>Loading...</p>
+          : <List list={posts.data} onRemoveItem = {handleRemovePost}/>
+      }      
     </>
 
   );
