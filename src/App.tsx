@@ -23,8 +23,8 @@ const StyledApp = styled.div`
 interface IPost {
   title: string;
   url: string;
-  author: string;
-  points: number;
+  author?: string;
+  points?: number;
   objectID: number;
 }
 
@@ -178,8 +178,8 @@ function App() {
           payload: result.data.map((el) => ({
             title: el.name,
             url: el.imageUrl,
-            author: '',
-            points: 0,
+            // author: '',
+            // points: 0,
             objectID: el._id,
           })),
         });
