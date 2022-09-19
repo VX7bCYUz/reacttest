@@ -21,15 +21,11 @@ const StyledApp = styled.div`
 `;
 
 interface IPost {
-  // title: string | null;
-  // url: string | null;
-  // author: string;
-  // // commentsCnt: number
-  // points: number;
-  // objectID: number;
-  _id: number;
-  name: string;
-  imageUrl: string;
+  title: string;
+  url: string;
+  author: string;
+  points: number;
+  objectID: number;
 }
 
 interface IListProps {
@@ -42,12 +38,10 @@ const List: FC<IListProps> = (props) => {
     <>
       {props.list.map(function (el) {
         return (
-          <div className={classes.clmy} key={el._id}>
-            {/* <div><a href={el.url}>{el.title}</a></div> */}
-            {/* <span>{el.author}</span> /+++/ <span>{el.points}</span> /+++/{' '} */}
-            <div>{el.name}</div>{' '}
+          <div className={classes.clmy} key={el.objectID}>
+            <div>{el.title}</div>{' '}
             <div>
-              <img src={el.imageUrl} />
+              <img src={el.url} alt={el.title} />
             </div>
             <button onClick={() => props.onRemoveItem(el)}>delete</button>
           </div>
@@ -92,14 +86,14 @@ type IPostsReducerAction =
     }
   | {
       type: 'FETCH_SUCCESS';
-      payload: IApiPost[];
+      payload: IPost[];
     }
   | {
       type: 'FETCH_FAILURE';
     }
   | {
       type: 'DELETE';
-      payload: IApiPost;
+      payload: IPost;
     };
 
 interface IPostsState {
@@ -122,20 +116,22 @@ const postsReducer: Reducer<IPostsState, IPostsReducerAction> = (
     case 'DELETE':
       return {
         ...state,
-        data: state.data.filter((p) => p._id !== action.payload._id),
+        data: state.data.filter((p) => p.objectID !== action.payload.objectID),
       };
   }
 };
 
-interface IApiPost extends IPost {
-  // title: string | null;
-  // url: string | null;
-  // author: string;
-  // points: number;
-  // objectID: string;
-  // _id: number;
-  // name: string | null;
-  // imageUrl: string | null;
+interface IApiPost {
+  /*
+  title: string | null;
+  url: string | null;
+  author: string;
+  points: number;
+  objectID: string;
+ */
+  _id: number;
+  name: string;
+  imageUrl: string;
 }
 
 interface IApiResponse {
@@ -174,12 +170,19 @@ function App() {
 
   const handlePosts = useCallback(() => {
     dispatchPosts({ type: 'FETCH_INIT' });
-    // fetch(`${API_URL}?query=${searchTerm}`)
     fetch(`${API_URL}`)
       .then((res) => res.json())
       .then((result: IApiResponse) => {
-        // dispatchPosts({ type: 'FETCH_SUCCESS', payload: result.hits });
-        dispatchPosts({ type: 'FETCH_SUCCESS', payload: result.data });
+        dispatchPosts({
+          type: 'FETCH_SUCCESS',
+          payload: result.data.map((el) => ({
+            title: el.name,
+            url: el.imageUrl,
+            author: '',
+            points: 0,
+            objectID: el._id,
+          })),
+        });
       })
       .catch(() => dispatchPosts({ type: 'FETCH_FAILURE' }));
   }, [searchTerm]);
